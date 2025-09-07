@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="A modern calculator for Sheckles with 10% fee in trading. Supports abbreviations like K, M, B, Qa, Qi up to Decillion.">
     <meta name="keywords" content="sheckle fee calculator, sheckle calculator, grow a garden sheckle calculator">
     <meta name="robots" content="index, follow">
@@ -224,10 +224,13 @@
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 1000;
-            transform: translateX(400px);
+            transform: translateX(400px);   
             transition: transform 0.3s ease;
             font-size: 14px;
             font-weight: 500;
+            max-width: 280px;              
+            width: auto;
+            white-space: nowrap;            
         }
 
         .toast.show {
@@ -246,7 +249,9 @@
 
             .toast {
                 right: 10px;
-                transform: translateX(300px);
+                 transform: translateX(320px);  
+                font-size: 13px;
+                max-width: 220px;              
             }
         }
 
@@ -265,6 +270,17 @@
             .theme-toggle {
                 width: 40px;
                 height: 40px;
+            }
+            .toast {
+                top: 10px;                
+                right: 5px;                
+                font-size: 12px;
+                padding: 8px 12px;
+                max-width: 200px;           
+                transform: translateX(240px); 
+            }
+            .toast.show {
+                transform: translateX(0); 
             }
         }
 
@@ -437,7 +453,7 @@
             const themeIcon = document.getElementById('theme-icon');
             
             if (currentTheme === 'dark') {
-                body.className = 'dark-theme min-h-screen flex items-center justify-center p-4 relative overflow-hidden';
+                body.className = 'dark-theme min-h-screen flex items-center justify-center pt-10 p-4 relative overflow-hidden';
                 themeIcon.textContent = '☀️';
                 // Update active tab styling
                 const activeTab = document.querySelector('.mode-tab.active');
@@ -446,7 +462,7 @@
                     activeTab.classList.add('dark');
                 }
             } else {
-                body.className = 'garden-theme min-h-screen flex items-center justify-center p-4 relative overflow-hidden';
+                body.className = 'garden-theme min-h-screen flex items-center justify-center pt-10 p-4 relative overflow-hidden';
                 themeIcon.textContent = '🌙';
                 // Update active tab styling
                 const activeTab = document.querySelector('.mode-tab.active');
