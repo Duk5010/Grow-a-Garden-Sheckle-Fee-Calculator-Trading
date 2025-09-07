@@ -457,6 +457,7 @@
             }
         }
 
+        
         // Mode switching
         mode1Btn.addEventListener('click', () => switchMode(1));
         mode2Btn.addEventListener('click', () => switchMode(2));
@@ -626,19 +627,50 @@
             attachTooltipListeners();
         }
 
-        // Copy to clipboard
-        function copyToClipboard(elementId) {
-            const element = document.getElementById(elementId);
-            const text = element.textContent.replace(/[¢\s]/g, '').replace(/[^\d.]/g, '');
-            const numericValue = parseFloat(text) || 0;
-            
-            navigator.clipboard.writeText(numericValue.toString()).then(() => {
-                showToast('Copied successfully!');
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                showToast('Copy failed!');
-            });
+// Copy to clipboard with full expansion (quick hack)
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+
+    // Take only the part before "?" (ignores debug info)
+    let rawText = element.textContent.split('?')[0].trim();
+
+    // Remove currency symbols, spaces, commas
+    rawText = rawText.replace(/[¢\s,]/g, '');
+
+    // Supported suffixes
+    const suffixes = {
+        K: 1e3,
+        M: 1e6,
+        B: 1e9,
+        T: 1e12,
+        Qa: 1e15,
+        Qi: 1e18
+    };
+
+    // Match number + optional suffix
+    const match = rawText.match(/^([\d.]+)([A-Za-z]+)?$/);
+    let expandedValue = rawText;
+
+    if (match) {
+        let number = parseFloat(match[1]);
+        let suffix = match[2];
+        if (suffix && suffixes[suffix]) {
+            expandedValue = (number * suffixes[suffix]).toFixed(0); // full expanded value
+        } else {
+            expandedValue = number.toString();
         }
+    }
+
+    navigator.clipboard.writeText(expandedValue).then(() => {
+        showToast('Copied successfully!');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Copy failed!');
+    });
+}
+
+
+
 
         // Attach tooltip listeners
         function attachTooltipListeners() {
@@ -739,6 +771,7 @@
 
         // Initialize with focus on first input
         setTimeout(() => amountInput.focus(), 500);
+        
     </script>
 </body>
 </html>
