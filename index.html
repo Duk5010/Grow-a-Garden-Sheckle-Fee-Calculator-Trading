@@ -309,59 +309,14 @@
         
         <!-- Mode Selector -->
         <div class="flex flex-col sm:flex-row mb-4 sm:mb-6 bg-white/10 rounded-lg p-1 space-y-2 sm:space-y-0 sm:space-x-2">
-            <button id="mode2-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 active dark text-white/80">
-                Desired → Before Fee
-            </button>
-            <button id="mode1-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 text-white">
+            <button id="mode1-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 active dark text-white">
                 Amount → After Fee
+            </button>
+            <button id="mode2-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 text-white/80">
+                Desired → Before Fee
             </button>
         </div>
         
-                <!-- Mode 2: Desired to Before Fee -->
-                <div id="mode2" class="mode-content hidden">
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-white/90 text-sm font-medium mb-3">
-                                Desired Final Amount
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 font-semibold">¢</span>
-                                <input 
-                                    type="text" 
-                                    id="desired-input" 
-                                    placeholder="e.g., 50M, 3.7B, 900K"
-                                    class="w-full pl-8 pr-4 py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200"
-                                >
-                            </div>
-                            <div id="desired-error" class="text-red-300 text-xs mt-2 hidden">Please enter a valid number with optional abbreviation (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, De). Maximum: 999De</div>
-                        </div>
-                        
-                        <!-- Results Cards -->
-                        <div class="space-y-4">
-        
-                            <div class="result-card">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-white/80 text-sm">Trading Fee (10%)</span>
-                                    <div class="flex items-center">
-                                        <span id="required-fee" class="text-red-300 font-medium">¢ 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-        
-                            <div class="result-card">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-white font-medium text-lg">Required Amount</span>
-                                    <div class="flex items-center">
-                                        <span id="required-amount" class="text-blue-300 font-bold text-xl">¢ 0.00</span>
-                                        <button class="copy-btn" onclick="copyToClipboard('required-amount')">📋</button>
-                                    </div>
-                                </div>
-                            </div>
-        
-                        </div>
-                    </div>
-                </div>
-
         <!-- Mode 1: Amount to After Fee -->
         <div id="mode1" class="mode-content">
             <div class="space-y-6">
@@ -405,7 +360,50 @@
             </div>
         </div>
         
+        <!-- Mode 2: Desired to Before Fee -->
+        <div id="mode2" class="mode-content hidden">
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-3">
+                        Desired Final Amount
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 font-semibold">¢</span>
+                        <input 
+                            type="text" 
+                            id="desired-input" 
+                            placeholder="e.g., 50M, 3.7B, 900K"
+                            class="w-full pl-8 pr-4 py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200"
+                        >
+                    </div>
+                    <div id="desired-error" class="text-red-300 text-xs mt-2 hidden">Please enter a valid number with optional abbreviation (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, De). Maximum: 999De</div>
+                </div>
+                
+                <!-- Results Cards -->
+                <div class="space-y-4">
 
+                    <div class="result-card">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80 text-sm">Trading Fee (10%)</span>
+                            <div class="flex items-center">
+                                <span id="required-fee" class="text-red-300 font-medium">¢ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white font-medium text-lg">Required Amount</span>
+                            <div class="flex items-center">
+                                <span id="required-amount" class="text-blue-300 font-bold text-xl">¢ 0.00</span>
+                                <button class="copy-btn" onclick="copyToClipboard('required-amount')">📋</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
         
         <!-- Info -->
         <div class="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
@@ -649,37 +647,46 @@
             attachTooltipListeners();
         }
 
-// Copy to clipboard with full expansion (quick hack)
+// Big integer copy (full digits, no scientific notation)
 function copyToClipboard(elementId) {
     const element = document.getElementById(elementId);
 
-    // Take only the part before "?" (ignores debug info)
     let rawText = element.textContent.split('?')[0].trim();
-
-    // Remove currency symbols, spaces, commas
     rawText = rawText.replace(/[¢\s,]/g, '');
 
-    // Supported suffixes
     const suffixes = {
-        K: 1e3,
-        M: 1e6,
-        B: 1e9,
-        T: 1e12,
-        Qa: 1e15,
-        Qi: 1e18
+        K: '000',
+        M: '000000',
+        B: '000000000',
+        T: '000000000000',
+        Qa: '000000000000000',
+        Qi: '000000000000000000',
+        Sx: '000000000000000000000',
+        Sp: '000000000000000000000000',
+        Oc: '000000000000000000000000000',
+        No: '000000000000000000000000000000',
+        De: '000000000000000000000000000000000'
     };
 
-    // Match number + optional suffix
     const match = rawText.match(/^([\d.]+)([A-Za-z]+)?$/);
     let expandedValue = rawText;
 
     if (match) {
-        let number = parseFloat(match[1]);
-        let suffix = match[2];
+        let number = match[1];
+        const suffix = match[2];
+
         if (suffix && suffixes[suffix]) {
-            expandedValue = (number * suffixes[suffix]).toFixed(0); // full expanded value
-        } else {
-            expandedValue = number.toString();
+            // Remove decimal point and adjust zeros
+            if (number.includes('.')) {
+                const parts = number.split('.');
+                let integerPart = parts[0];
+                let decimalPart = parts[1];
+                expandedValue = integerPart + decimalPart + suffixes[suffix].slice(decimalPart.length);
+            } else {
+                expandedValue = number + suffixes[suffix];
+            }
+            // Remove leading zeros (optional)
+            expandedValue = expandedValue.replace(/^0+/, '');
         }
     }
 
