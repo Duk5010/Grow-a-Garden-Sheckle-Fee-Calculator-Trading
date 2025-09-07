@@ -22,6 +22,8 @@ This project is designed to make it easy to enter amounts with shorthand (e.g., 
 ---
 
 ## 🚀 Getting Started
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-username/grow-a-garden-sheckle-fee-calculator-trading.git
+
+You can try the calculator directly here:  
+👉 [Live Website](https://duk5010.github.io/Grow-a-Garden-Sheckle-Fee-Calculator-Trading/)  
+
+No installation needed — just open the link and start calculating!
