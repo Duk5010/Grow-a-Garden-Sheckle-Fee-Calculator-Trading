@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A modern calculator for Sheckles with 10% fee in trading. Supports abbreviations like K, M, B, Qa, Qi up to Decillion.">
+    <meta name="keywords" content="sheckle fee calculator, sheckle calculator, grow a garden sheckle calculator">
+    <meta name="robots" content="index, follow">
+    <title>Checkle Calculator Pro</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --garden-primary: #22c55e;
+            --garden-secondary: #16a34a;
+            --garden-tertiary: #15803d;
+            --garden-dark: #14532d;
+            --dark-primary: #1f2937;
+            --dark-secondary: #374151;
+            --dark-tertiary: #4b5563;
+            --dark-accent: #6366f1;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .garden-theme {
+            background: linear-gradient(135deg, var(--garden-primary) 0%, var(--garden-secondary) 30%, var(--garden-tertiary) 60%, var(--garden-dark) 100%);
+        }
+        
+        .dark-theme {
+            background: linear-gradient(135deg, var(--dark-primary) 0%, var(--dark-secondary) 30%, var(--dark-tertiary) 60%, #111827 100%);
+        }
+        
+        .garden-theme::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(34, 197, 94, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(22, 163, 74, 0.4) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .dark-theme::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .dark-theme .glass-card {
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+        }
+        
+        .result-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        
+        .dark-theme .result-card {
+            background: rgba(55, 65, 81, 0.6);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+        
+        .mode-tab.active.garden {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+        }
+        
+        .mode-tab.active.dark {
+            background: linear-gradient(135deg, var(--dark-accent) 0%, #8b5cf6 100%);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .currency-symbol {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            margin-left: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .info-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            min-width: 280px;
+            text-align: left;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.95);
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-5px);
+        }
+        
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 4px 8px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 8px;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .copy-btn.copied {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(180deg);
+        }
+        
+        .invalid-input {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(34, 197, 94, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        @media (max-width: 768px) {
+            .tooltip {
+                min-width: 250px;
+                font-size: 12px;
+            }
+            
+            .glass-card {
+                margin: 10px;
+            }
+
+            .toast {
+                right: 10px;
+                transform: translateX(300px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem; 
+            }
+            .result-card span {
+                font-size: 0.9rem;
+            }
+            .tooltip {
+                min-width: 200px;
+                font-size: 11px;
+                padding: 12px;
+            }
+            .theme-toggle {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+    </style>
+</head>
+<body class="dark-theme min-h-screen flex items-center justify-center pt-10 p-4 relative overflow-hidden">
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon" style="font-size: 24px;">☀️</span>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toast-message">Copied successfully!</span>
+    </div>
+    
+    <!-- Main Calculator -->
+    <div class="glass-card rounded-2xl p-4 sm:p-6 lg:p-8 w-full max-w-sm sm:max-w-md lg:max-w-2xl shadow-2xl">
+        <!-- Header -->
+        <div class="text-center mb-6 sm:mb-8">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3">
+                <span class="currency-symbol">¢</span> Sheckle Fee Calculator
+            </h1>
+            <p class="text-white/80 text-xs sm:text-sm">Advanced currency calculator with 10% trading fee</p>
+        </div>
+        
+        <!-- Mode Selector -->
+        <div class="flex flex-col sm:flex-row mb-4 sm:mb-6 bg-white/10 rounded-lg p-1 space-y-2 sm:space-y-0 sm:space-x-2">
+            <button id="mode1-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 active dark text-white">
+                Amount → After Fee
+            </button>
+            <button id="mode2-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 text-white/80">
+                Desired → Before Fee
+            </button>
+        </div>
+        
+        <!-- Mode 1: Amount to After Fee -->
+        <div id="mode1" class="mode-content">
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-3">
+                        Enter Sheckle Amount
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 font-semibold">¢</span>
+                        <input 
+                            type="text" 
+                            id="amount-input" 
+                            placeholder="e.g., 100K, 2.5M, 1.2Qa"
+                            class="w-full pl-8 pr-4 py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200"
+                        >
+                    </div>
+                    <div id="amount-error" class="text-red-300 text-xs mt-2 hidden">Please enter a valid number with optional abbreviation (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, De). Maximum: 999De</div>
+                </div>
+                
+                <!-- Results Cards -->
+                <div class="space-y-4">
+                    <div class="result-card">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80 text-sm">Trading Fee (10%)</span>
+                            <div class="flex items-center">
+                                <span id="fee-amount" class="text-red-300 font-medium">¢ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white font-medium text-lg">Final Amount</span>
+                            <div class="flex items-center">
+                                <span id="final-amount" class="text-green-300 font-bold text-xl">¢ 0.00</span>
+                                <button class="copy-btn" onclick="copyToClipboard('final-amount')">📋</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mode 2: Desired to Before Fee -->
+        <div id="mode2" class="mode-content hidden">
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-3">
+                        Desired Final Amount
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 font-semibold">¢</span>
+                        <input 
+                            type="text" 
+                            id="desired-input" 
+                            placeholder="e.g., 50M, 3.7B, 900K"
+                            class="w-full pl-8 pr-4 py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200"
+                        >
+                    </div>
+                    <div id="desired-error" class="text-red-300 text-xs mt-2 hidden">Please enter a valid number with optional abbreviation (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, De). Maximum: 999De</div>
+                </div>
+                
+                <!-- Results Cards -->
+                <div class="space-y-4">
+
+                    <div class="result-card">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80 text-sm">Trading Fee (10%)</span>
+                            <div class="flex items-center">
+                                <span id="required-fee" class="text-red-300 font-medium">¢ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white font-medium text-lg">Required Amount</span>
+                            <div class="flex items-center">
+                                <span id="required-amount" class="text-blue-300 font-bold text-xl">¢ 0.00</span>
+                                <button class="copy-btn" onclick="copyToClipboard('required-amount')">📋</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info -->
+        <div class="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
+            <p class="text-white/70 text-xs text-center">
+                <span class="inline-block w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                Supports: K (Thousand), M (Million), B (Billion), T (Trillion), Qa (Quadrillion), Qi (Quintillion), Sx (Sextillion), Sp (Septillion), Oc (Octillion), No (Nonillion), De (Decillion) • Maximum: 999De
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Number abbreviations with full details
+        const abbreviations = {
+            'K': { name: 'Thousand', multiplier: 1000, zeroes: 3 },
+            'M': { name: 'Million', multiplier: 1000000, zeroes: 6 },
+            'B': { name: 'Billion', multiplier: 1000000000, zeroes: 9 },
+            'T': { name: 'Trillion', multiplier: 1000000000000, zeroes: 12 },
+            'Qa': { name: 'Quadrillion', multiplier: 1000000000000000, zeroes: 15 },
+            'Qi': { name: 'Quintillion', multiplier: 1000000000000000000, zeroes: 18 },
+            'Sx': { name: 'Sextillion', multiplier: 1000000000000000000000, zeroes: 21 },
+            'Sp': { name: 'Septillion', multiplier: 1000000000000000000000000, zeroes: 24 },
+            'Oc': { name: 'Octillion', multiplier: 1000000000000000000000000000, zeroes: 27 },
+            'No': { name: 'Nonillion', multiplier: 1000000000000000000000000000000, zeroes: 30 },
+            'De': { name: 'Decillion', multiplier: 1000000000000000000000000000000000, zeroes: 33 }
+        };
+
+        // State
+        let currentTheme = 'dark';
+
+        // Elements
+        const body = document.body;
+        const mode1Btn = document.getElementById('mode1-btn');
+        const mode2Btn = document.getElementById('mode2-btn');
+        const mode1Content = document.getElementById('mode1');
+        const mode2Content = document.getElementById('mode2');
+        const amountInput = document.getElementById('amount-input');
+        const desiredInput = document.getElementById('desired-input');
+        const feeAmount = document.getElementById('fee-amount');
+        const finalAmount = document.getElementById('final-amount');
+        const requiredAmount = document.getElementById('required-amount');
+        const requiredFee = document.getElementById('required-fee');
+        const toast = document.getElementById('toast');
+        
+        // Theme toggle
+        function toggleTheme() {
+            currentTheme = currentTheme === 'garden' ? 'dark' : 'garden';
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (currentTheme === 'dark') {
+                body.className = 'dark-theme min-h-screen flex items-center justify-center p-4 relative overflow-hidden';
+                themeIcon.textContent = '☀️';
+                // Update active tab styling
+                const activeTab = document.querySelector('.mode-tab.active');
+                if (activeTab) {
+                    activeTab.classList.remove('garden');
+                    activeTab.classList.add('dark');
+                }
+            } else {
+                body.className = 'garden-theme min-h-screen flex items-center justify-center p-4 relative overflow-hidden';
+                themeIcon.textContent = '🌙';
+                // Update active tab styling
+                const activeTab = document.querySelector('.mode-tab.active');
+                if (activeTab) {
+                    activeTab.classList.remove('dark');
+                    activeTab.classList.add('garden');
+                }
+            }
+        }
+
+        // Mode switching
+        mode1Btn.addEventListener('click', () => switchMode(1));
+        mode2Btn.addEventListener('click', () => switchMode(2));
+
+        function switchMode(mode) {
+            if (mode === 1) {
+                mode1Btn.classList.add('active', currentTheme);
+                mode2Btn.classList.remove('active', 'garden', 'dark');
+                mode1Content.classList.remove('hidden');
+                mode2Content.classList.add('hidden');
+            } else {
+                mode2Btn.classList.add('active', currentTheme);
+                mode1Btn.classList.remove('active', 'garden', 'dark');
+                mode2Content.classList.remove('hidden');
+                mode1Content.classList.add('hidden');
+            }
+        }
+
+        // Input validation
+        function validateInput(input) {
+            if (!input.trim()) return { valid: true, value: 0 };
+            
+            // Check for valid number with optional abbreviation
+            const regex = /^(\d*\.?\d+)\s*([A-Za-z]*)$/;
+            const match = input.trim().match(regex);
+            
+            if (!match) return { valid: false };
+            
+            const number = parseFloat(match[1]);
+            const abbr = match[2];
+            
+            if (isNaN(number)) return { valid: false };
+            if (abbr && !abbreviations[abbr]) return { valid: false };
+            
+            const value = abbr ? number * abbreviations[abbr].multiplier : number;
+            const maxValue = 999 * abbreviations['De'].multiplier; // 999 Decillion
+            
+            if (value > maxValue) return { valid: false, exceedsMax: true };
+            
+            return { valid: true, value: value };
+        }
+
+        // Parse input with abbreviations
+        function parseInput(input) {
+            const validation = validateInput(input);
+            return validation.valid ? validation.value : 0;
+        }
+
+        // Format number with abbreviation
+        function formatNumber(num) {
+            if (num === 0) return '0.00';
+            
+            const absNum = Math.abs(num);
+            for (const [abbr, data] of Object.entries(abbreviations).reverse()) {
+                if (absNum >= data.multiplier) {
+                    const abbreviated = num / data.multiplier;
+                    return `${abbreviated.toFixed(2)}${abbr}`;
+                }
+            }
+            
+            return num.toFixed(2);
+        }
+
+        // Format currency with abbreviation support and info icon
+        function formatCurrency(amount, elementId) {
+            const formatted = formatNumber(amount);
+            const hasAbbreviation = /[A-Za-z]+$/.test(formatted);
+            
+            if (hasAbbreviation && amount > 0) {
+                const match = formatted.match(/^(\d*\.?\d+)\s*([A-Za-z]+)$/);
+                if (match) {
+                    const abbr = match[2];
+                    const data = abbreviations[abbr];
+                    return `¢ ${formatted}<span class="abbreviated-number" style="position: relative; display: inline-block;">
+                        <span class="info-icon" data-abbr="${abbr}" data-amount="${amount}">?</span>
+                        <div class="tooltip">
+                            <div style="font-weight: bold; color: #60a5fa; margin-bottom: 8px;">${data.name}</div>
+                            <div style="margin-bottom: 6px;"><strong>Full value:</strong> ${amount.toLocaleString()}</div>
+                            <div><strong>Zero count:</strong> ${data.zeroes} zeroes</div>
+                        </div>
+                    </span>`;
+                }
+            }
+            
+            return `¢ ${formatted}`;
+        }
+
+        // Show input error
+        function showInputError(inputId, show, exceedsMax = false) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(inputId.replace('-input', '-error'));
+            
+            if (show) {
+                input.classList.add('invalid-input');
+                error.classList.remove('hidden');
+                
+                if (exceedsMax) {
+                    error.textContent = "Value exceeds maximum limit of 999De (999 Decillion)";
+                } else {
+                    error.textContent = "Please enter a valid number with optional abbreviation (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, De). Maximum: 999De";
+                }
+            } else {
+                input.classList.remove('invalid-input');
+                error.classList.add('hidden');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message = 'Copied successfully!') {
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Mode 1: Calculate after fee
+        function calculateAfterFee() {
+            const inputValue = amountInput.value;
+            const validation = validateInput(inputValue);
+            
+            if (!validation.valid && inputValue.trim()) {
+                showInputError('amount-input', true, validation.exceedsMax);
+                return;
+            } else {
+                showInputError('amount-input', false);
+            }
+
+            const amount = validation.value;
+            const fee = amount * 0.1;
+            const final = amount - fee;
+
+            feeAmount.innerHTML = formatCurrency(fee, 'fee');
+            finalAmount.innerHTML = formatCurrency(final, 'final');
+            
+            attachTooltipListeners();
+        }
+
+        // Mode 2: Calculate before fee
+        function calculateBeforeFee() {
+            const inputValue = desiredInput.value;
+            const validation = validateInput(inputValue);
+            
+            if (!validation.valid && inputValue.trim()) {
+                showInputError('desired-input', true, validation.exceedsMax);
+                return;
+            } else {
+                showInputError('desired-input', false);
+            }
+
+            const desired = validation.value;
+            const required = desired / 0.9;
+            const fee = required * 0.1;
+
+            // Check if required amount exceeds maximum
+            const maxValue = 999 * abbreviations['De'].multiplier;
+            if (required > maxValue) {
+                showInputError('desired-input', true, true);
+                return;
+            }
+
+            requiredAmount.innerHTML = formatCurrency(required, 'required');
+            requiredFee.innerHTML = formatCurrency(fee, 'reqfee');
+            
+            attachTooltipListeners();
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent.replace(/[¢\s]/g, '').replace(/[^\d.]/g, '');
+            const numericValue = parseFloat(text) || 0;
+            
+            navigator.clipboard.writeText(numericValue.toString()).then(() => {
+                showToast('Copied successfully!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showToast('Copy failed!');
+            });
+        }
+
+        // Attach tooltip listeners
+        function attachTooltipListeners() {
+            setTimeout(() => {
+                const infoIcons = document.querySelectorAll('.info-icon');
+                infoIcons.forEach(icon => {
+                    // Remove existing listeners
+                    const newIcon = icon.cloneNode(true);
+                    icon.parentNode.replaceChild(newIcon, icon);
+                });
+                
+                // Reattach listeners
+                document.querySelectorAll('.info-icon').forEach(icon => {
+                    const tooltip = icon.nextElementSibling;
+                    
+                    icon.addEventListener('mouseenter', () => {
+                        // Hide all other tooltips
+                        document.querySelectorAll('.tooltip').forEach(t => {
+                            if (t !== tooltip) t.classList.remove('show');
+                        });
+                        tooltip.classList.add('show');
+                    });
+                    
+                    icon.addEventListener('mouseleave', () => {
+                        setTimeout(() => {
+                            if (!tooltip.matches(':hover')) {
+                                tooltip.classList.remove('show');
+                            }
+                        }, 100);
+                    });
+                    
+                    tooltip.addEventListener('mouseleave', () => {
+                        tooltip.classList.remove('show');
+                    });
+                    
+                    icon.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        tooltip.classList.toggle('show');
+                    });
+                });
+            }, 10);
+        }
+
+        // Event listeners for real-time calculation
+        amountInput.addEventListener('input', calculateAfterFee);
+        desiredInput.addEventListener('input', calculateBeforeFee);
+
+        // Initialize calculations
+        calculateAfterFee();
+        calculateBeforeFee();
+
+        // Add focus effects
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+                this.parentElement.style.transition = 'transform 0.2s ease';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        // Close tooltips when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.abbreviated-number')) {
+                document.querySelectorAll('.tooltip').forEach(tooltip => {
+                    tooltip.classList.remove('show');
+                });
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && e.ctrlKey) {
+                e.preventDefault();
+                const currentMode = mode1Content.classList.contains('hidden') ? 2 : 1;
+                switchMode(currentMode === 1 ? 2 : 1);
+            }
+            
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.tooltip').forEach(tooltip => {
+                    tooltip.classList.remove('show');
+                });
+            }
+        });
+
+        // Auto-focus on input when switching modes
+        mode1Btn.addEventListener('click', () => {
+            setTimeout(() => amountInput.focus(), 100);
+        });
+        
+        mode2Btn.addEventListener('click', () => {
+            setTimeout(() => desiredInput.focus(), 100);
+        });
+
+        // Initialize with focus on first input
+        setTimeout(() => amountInput.focus(), 500);
+    </script>
+</body>
+</html>
