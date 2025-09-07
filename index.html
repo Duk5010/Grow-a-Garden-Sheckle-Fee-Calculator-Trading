@@ -6,7 +6,7 @@
     <meta name="description" content="A modern calculator for Sheckles with 10% fee in trading. Supports abbreviations like K, M, B, Qa, Qi up to Decillion.">
     <meta name="keywords" content="sheckle fee calculator, sheckle calculator, grow a garden sheckle calculator">
     <meta name="robots" content="index, follow">
-    <title>Sheckle Fee Calculator</title>
+    <title>Checkle Calculator Pro</title>
     <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -309,14 +309,59 @@
         
         <!-- Mode Selector -->
         <div class="flex flex-col sm:flex-row mb-4 sm:mb-6 bg-white/10 rounded-lg p-1 space-y-2 sm:space-y-0 sm:space-x-2">
-            <button id="mode1-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 active dark text-white">
-                Amount → After Fee
-            </button>
             <button id="mode2-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 text-white/80">
                 Desired → Before Fee
             </button>
+            <button id="mode1-btn" class="mode-tab flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 active dark text-white">
+                Amount → After Fee
+            </button>
         </div>
         
+                <!-- Mode 2: Desired to Before Fee -->
+                <div id="mode2" class="mode-content hidden">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-white/90 text-sm font-medium mb-3">
+                                Desired Final Amount
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 font-semibold">¢</span>
+                                <input 
+                                    type="text" 
+                                    id="desired-input" 
+                                    placeholder="e.g., 50M, 3.7B, 900K"
+                                    class="w-full pl-8 pr-4 py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200"
+                                >
+                            </div>
+                            <div id="desired-error" class="text-red-300 text-xs mt-2 hidden">Please enter a valid number with optional abbreviation (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, De). Maximum: 999De</div>
+                        </div>
+                        
+                        <!-- Results Cards -->
+                        <div class="space-y-4">
+        
+                            <div class="result-card">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-white/80 text-sm">Trading Fee (10%)</span>
+                                    <div class="flex items-center">
+                                        <span id="required-fee" class="text-red-300 font-medium">¢ 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+        
+                            <div class="result-card">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-white font-medium text-lg">Required Amount</span>
+                                    <div class="flex items-center">
+                                        <span id="required-amount" class="text-blue-300 font-bold text-xl">¢ 0.00</span>
+                                        <button class="copy-btn" onclick="copyToClipboard('required-amount')">📋</button>
+                                    </div>
+                                </div>
+                            </div>
+        
+                        </div>
+                    </div>
+                </div>
+
         <!-- Mode 1: Amount to After Fee -->
         <div id="mode1" class="mode-content">
             <div class="space-y-6">
@@ -360,50 +405,7 @@
             </div>
         </div>
         
-        <!-- Mode 2: Desired to Before Fee -->
-        <div id="mode2" class="mode-content hidden">
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-white/90 text-sm font-medium mb-3">
-                        Desired Final Amount
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 font-semibold">¢</span>
-                        <input 
-                            type="text" 
-                            id="desired-input" 
-                            placeholder="e.g., 50M, 3.7B, 900K"
-                            class="w-full pl-8 pr-4 py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200"
-                        >
-                    </div>
-                    <div id="desired-error" class="text-red-300 text-xs mt-2 hidden">Please enter a valid number with optional abbreviation (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, De). Maximum: 999De</div>
-                </div>
-                
-                <!-- Results Cards -->
-                <div class="space-y-4">
 
-                    <div class="result-card">
-                        <div class="flex justify-between items-center">
-                            <span class="text-white/80 text-sm">Trading Fee (10%)</span>
-                            <div class="flex items-center">
-                                <span id="required-fee" class="text-red-300 font-medium">¢ 0.00</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="result-card">
-                        <div class="flex justify-between items-center">
-                            <span class="text-white font-medium text-lg">Required Amount</span>
-                            <div class="flex items-center">
-                                <span id="required-amount" class="text-blue-300 font-bold text-xl">¢ 0.00</span>
-                                <button class="copy-btn" onclick="copyToClipboard('required-amount')">📋</button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
         
         <!-- Info -->
         <div class="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
@@ -795,4 +797,3 @@ function copyToClipboard(elementId) {
     </script>
 </body>
 </html>
-
